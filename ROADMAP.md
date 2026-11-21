@@ -9,7 +9,7 @@ Set up the foundational infrastructure, continuous integration pipeline, and dat
 
 ### Acceptance Criteria
 - [x] Initialize GitHub repository with Branch Protection rules for `main`.
-- [ ] Set up GitHub Actions CI pipeline (`.github/workflows/ci.yml`) with Ruff, Mypy (strict), and Pytest.
+- [x] Set up GitHub Actions CI pipeline (`.github/workflows/ci.yml`) with Ruff, Mypy (strict), and Pytest.
 - [ ] Create `docker-compose.yml` including API, PostgreSQL (with pgvector), Redis, and MinIO services.
 - [x] Initialize FastAPI application with a basic healthcheck router.
 - [ ] Configure database connection using SQLAlchemy 2.0 (asyncpg).
