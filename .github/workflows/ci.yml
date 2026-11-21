@@ -37,7 +37,7 @@ jobs:
         run: uv run ruff check .
 
       - name: Static type check (Mypy Strict)
-        run: uv run mypy --strict app
+        run: uv run mypy
 
       - name: Run tests with coverage threshold
         run: uv run pytest -s --cov=app --cov-branch --cov-fail-under=85 tests/
