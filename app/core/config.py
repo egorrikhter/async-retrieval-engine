@@ -76,6 +76,12 @@ class Settings(BaseSettings):
     app_minio_port: Annotated[int, Field(ge=1, le=65535)] = 9000
     app_minio_bucket: CleanStr = "documents"
 
+    db_pool_size: Annotated[int, Field(ge=5, le=10)] = 5
+    db_max_overflow: Annotated[int, Field(ge=10, le=20)] = 10
+    db_pool_timeout: Annotated[int, Field(ge=30, le=60)] = 30
+    db_pool_recycle: Annotated[int, Field(ge=1800, le=3600)] = 1800
+    db_pool_pre_ping: bool = True
+
     @model_validator(mode="after")
     def validate_prod_constraints(self) -> Self:
         if self.app_env == AppEnv.PROD and self.app_debug:

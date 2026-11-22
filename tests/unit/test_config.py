@@ -31,6 +31,11 @@ def _make_settings(
     app_redis_host: str = "redis_host",
     app_minio_host: str = "minio_host",
     app_minio_bucket: str = "minio_bucket",
+    db_pool_size: int = 5,
+    db_max_overflow: int = 10,
+    db_pool_timeout: int = 30,
+    db_pool_recycle: int = 1800,
+    db_pool_pre_ping: bool = True,
 ) -> Settings:
     return Settings(
         app_env=app_env,
@@ -44,6 +49,11 @@ def _make_settings(
         app_redis_host=app_redis_host,
         app_minio_host=app_minio_host,
         app_minio_bucket=app_minio_bucket,
+        db_pool_size=db_pool_size,
+        db_max_overflow=db_max_overflow,
+        db_pool_timeout=db_pool_timeout,
+        db_pool_recycle=db_pool_recycle,
+        db_pool_pre_ping=db_pool_pre_ping,
     )
 
 
@@ -59,6 +69,11 @@ class SettingsOverrides(TypedDict, total=False):
     app_redis_host: str
     app_minio_host: str
     app_minio_bucket: str
+    db_pool_size: int
+    db_max_overflow: int
+    db_pool_timeout: int
+    db_pool_recycle: int
+    db_pool_pre_ping: bool
 
 
 def test_valid_settings_load() -> None:
