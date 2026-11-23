@@ -20,8 +20,9 @@ async def test_get_db_session(test_container: URL) -> None:
     test_app.state.session_factory = session_factory
     request = Request(scope={"type": "http", "app": test_app})
     try:
-        async for session in get_db_session(request):
-            result = await session.execute(text("SELECT 1"))
-            assert result.scalar_one() == 1
+        async with session_factory() as session:
+            async for session in get_db_session(request):
+                result = await session.execute(text("SELECT 1"))
+                assert result.scalar_one() == 1
     finally:
         await async_engine.dispose()
