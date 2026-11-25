@@ -1,0 +1,59 @@
+services:
+    postgres:
+        image: pgvector/pgvector:pg16
+        restart: "unless-stopped"
+        environment:
+            POSTGRES_USER: ${APP_POSTGRES_USER}
+            POSTGRES_DB: ${APP_POSTGRES_DB}
+            POSTGRES_PASSWORD: ${APP_POSTGRES_PASSWORD}
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${APP_POSTGRES_USER} -d ${APP_POSTGRES_DB}"]
+            interval: 5s
+            retries: 5
+            start_period: 30s
+            timeout: 10s
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+
+    minio:
+        build:
+            context: .
+            dockerfile: Dockerfile.minio
+        restart: "unless-stopped"
+        environment:
+            MINIO_ROOT_USER: ${APP_MINIO_ROOT_USER}
+            MINIO_ROOT_PASSWORD: ${APP_MINIO_ROOT_PASSWORD}
+        command: server /data --console-address ":9001"
+        healthcheck:
+          test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+          interval: 5s
+          retries: 5
+          start_period: 30s
+          timeout: 5s
+        volumes:
+            - minio_data:/data
+        ports:
+           - "9000:9000"
+           - "9001:9001"
+
+    redis:
+        image: redis:7-alpine
+        restart: "unless-stopped"
+        command: redis-server --appendonly yes --maxmemory-policy noeviction --requirepass ${APP_REDIS_PASSWORD}
+        healthcheck:
+          test: ["CMD", "redis-cli", "-a ${APP_REDIS_PASSWORD}" , "ping"]
+          interval: 5s
+          retries: 5
+          timeout: 3s
+        volumes:
+            - redis_data:/data
+        ports:
+            - "6379:6379"
+
+
+volumes:
+    postgres_data:
+    minio_data:
+    redis_data:
