@@ -23,11 +23,11 @@ Set up the foundational infrastructure, continuous integration pipeline, and dat
 Design and implement the PostgreSQL database schema using SQLAlchemy 2.0, including pgvector integration and partial indices for soft deletion.
 
 ### Acceptance Criteria
-- [ ] Create `Document` model (file metadata, status enum, `deleted_at`).
-- [ ] Create `Chunk` model with `halfvec(1536)` for embeddings.
-- [ ] Configure unique constraint on `(document_id, chunk_index)` to ensure idempotency.
-- [ ] Generate Alembic migration creating tables and types.
-- [ ] Generate Alembic migration creating partial B-Tree and HNSW indices (`WHERE is_deleted = false`).
+- [x] Create `Document` model (file metadata, status enum, `deleted_at`).
+- [x] Create `Chunk` model with `halfvec(1536)` for embeddings.
+- [x] Configure unique constraint on `(document_id, chunk_index)` to ensure idempotency.
+- [x] Generate Alembic migration creating tables and types.
+- [x] Generate Alembic migration creating partial B-Tree and HNSW indices (`WHERE is_deleted = false`).
 
 ---
 

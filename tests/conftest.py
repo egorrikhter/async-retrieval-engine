@@ -1,4 +1,4 @@
-from collections.abc import AsyncGenerator, Generator
+from collections.abc import AsyncGenerator, AsyncIterator, Generator
 from pathlib import Path
 
 import httpx
@@ -7,6 +7,7 @@ from alembic.command import upgrade
 from alembic.config import Config
 from sqlalchemy import URL
 from sqlalchemy.engine import make_url
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from testcontainers.community.postgres import PostgresContainer
 
 from app.main import app
@@ -35,3 +36,28 @@ def alembic_config(test_container: URL):
     alembic_cfg = Config(file_=alembic_ini_path)
     alembic_cfg.attributes["url"] = test_container
     upgrade(config=alembic_cfg, revision="head")
+
+
+@pytest.fixture(scope="session")
+async def db_engine(test_container: URL) -> AsyncIterator[AsyncEngine]:
+    async_engine = create_async_engine(url=test_container)
+    try:
+        yield async_engine
+    finally:
+        await async_engine.dispose()
+
+
+@pytest.fixture(scope="function")
+async def db_session(db_engine: AsyncEngine) -> AsyncIterator[AsyncSession]:
+    async with db_engine.connect() as conn:
+        trans = await conn.begin()
+        session = AsyncSession(
+            bind=conn,
+            expire_on_commit=False,
+            join_transaction_mode="create_savepoint",
+        )
+        try:
+            yield session
+        finally:
+            await session.close()
+            await trans.rollback()
