@@ -44,7 +44,7 @@ async def test_preservation_and_defaults(db_session: AsyncSession) -> None:
     assert saved_doc.meta_data == {}
     assert saved_doc.created_at is not None
     assert saved_doc.deleted_at is None
-    assert saved_doc.status == Status.PENDING.value
+    assert saved_doc.status is Status.PENDING
 
     assert saved_chunk is not None
     assert saved_chunk.chunk_id is not None
@@ -90,9 +90,11 @@ async def test_unique_constraint(db_session: AsyncSession) -> None:
         tenant_id=tenant_id,
     )
 
-    with pytest.raises(IntegrityError):
-        db_session.add(second_chunk)
+    db_session.add(second_chunk)
+    with pytest.raises(IntegrityError) as exc_info:
         await db_session.commit()
+
+    assert "uq_chunk_index_chunk_id" in str(exc_info.value)
 
 
 async def test_cascade_delete(db_session: AsyncSession) -> None:
@@ -144,3 +146,31 @@ async def test_check_indexes(db_session: AsyncSession) -> None:
     assert "is_deleted" in indexes["idx_chunks_embeddings"].lower()
     assert "hnsw" in indexes["idx_chunks_embeddings"].lower()
     assert "halfvec_cosine_ops" in indexes["idx_chunks_embeddings"].lower()
+
+
+async def test_fk_foreign_chunk(db_session: AsyncSession) -> None:
+    tenant_id_doc = uuid4()
+    tenant_id_chunk = uuid4()
+
+    doc = Documents(
+        source_path="test_path_to_file",
+        file_type="test_file_type",
+        tenant_id=tenant_id_doc,
+    )
+
+    db_session.add(doc)
+    await db_session.flush()
+
+    first_chunk = Chunks(
+        document_id=doc.document_id,
+        content="test_content_for_chunk",
+        chunk_index=0,
+        embedding=[0.5] * 1536,
+        tenant_id=tenant_id_chunk,
+    )
+    db_session.add(first_chunk)
+
+    with pytest.raises(IntegrityError) as exc_info:
+        await db_session.commit()
+
+    assert "fk_document_id_tenant_id" in str(exc_info.value)

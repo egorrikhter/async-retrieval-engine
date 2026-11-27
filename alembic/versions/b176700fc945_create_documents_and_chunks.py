@@ -8,7 +8,7 @@ Create Date: 2026-11-25 12:52:40.949455
 
 from collections.abc import Sequence
 
-import pgvector
+import pgvector.sqlalchemy
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
@@ -51,6 +51,9 @@ def upgrade() -> None:
         ),
         sa.Column("tenant_id", sa.Uuid(), nullable=False),
         sa.PrimaryKeyConstraint("document_id"),
+        sa.UniqueConstraint(
+            "document_id", "tenant_id", name="uq_document_id_tenant_id"
+        ),
     )
     op.create_table(
         "chunks",
@@ -78,7 +81,10 @@ def upgrade() -> None:
             "is_deleted", sa.BOOLEAN(), server_default=sa.text("false"), nullable=False
         ),
         sa.ForeignKeyConstraint(
-            ["document_id"], ["documents.document_id"], ondelete="CASCADE"
+            ["document_id", "tenant_id"],
+            ["documents.document_id", "documents.tenant_id"],
+            ondelete="CASCADE",
+            name="fk_document_id_tenant_id",
         ),
         sa.PrimaryKeyConstraint("chunk_id"),
         sa.UniqueConstraint(

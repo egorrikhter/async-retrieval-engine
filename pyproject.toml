@@ -46,7 +46,7 @@ packages = ["app"]
 python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
-files = ["app", "tests"]
+files = ["app", "tests", "alembic"]
 
 [[tool.mypy.overrides]]
 module = "tests.*"

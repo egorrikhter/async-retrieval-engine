@@ -6,7 +6,7 @@ from uuid import UUID
 from pgvector.sqlalchemy import HALFVEC
 from sqlalchemy import (
     DateTime,
-    ForeignKey,
+    ForeignKeyConstraint,
     Identity,
     Index,
     UniqueConstraint,
@@ -16,6 +16,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BOOLEAN, ENUM, JSONB, TEXT
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.schema import SchemaItem
 from sqlalchemy.types import Integer
 
 from app.core.database import Base
@@ -66,15 +67,17 @@ class Documents(Base):
     )
     tenant_id: Mapped[UUID] = mapped_column(nullable=False)
 
+    __table_args__: tuple[SchemaItem] = (
+        UniqueConstraint("document_id", "tenant_id", name="uq_document_id_tenant_id"),
+    )
+
 
 class Chunks(Base):
     __tablename__: str = "chunks"
     chunk_id: Mapped[int] = mapped_column(
         BIGINT, Identity(always=True), primary_key=True
     )
-    document_id: Mapped[UUID] = mapped_column(
-        ForeignKey("documents.document_id", ondelete="CASCADE"), nullable=False
-    )
+    document_id: Mapped[UUID] = mapped_column(nullable=False)
     content: Mapped[str] = mapped_column(TEXT, nullable=False)
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
     embedding: Mapped[list[float]] = mapped_column(HALFVEC(1536))
@@ -89,7 +92,13 @@ class Chunks(Base):
         BOOLEAN, nullable=False, default=False, server_default=false()
     )
 
-    __table_args__: tuple[UniqueConstraint | Index, ...] = (
+    __table_args__: tuple[SchemaItem, ...] = (
+        ForeignKeyConstraint(
+            ["document_id", "tenant_id"],
+            ["documents.document_id", "documents.tenant_id"],
+            ondelete="CASCADE",
+            name="fk_document_id_tenant_id",
+        ),
         UniqueConstraint("document_id", "chunk_index", name="uq_chunk_index_chunk_id"),
         Index(
             "idx_documents_id",
