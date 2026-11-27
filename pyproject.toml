@@ -8,6 +8,7 @@ dependencies = [
     "asyncpg>=0.32.0",
     "fastapi>=0.162.4",
     "httpx>=0.28.1",
+    "pgvector>=0.5.1",
     "pydantic>=2.14.3",
     "pydantic-settings>=2.16.3",
     "pytest>=9.2.0",
@@ -31,6 +32,7 @@ build-backend = "hatchling.build"
 dev = [
     "alembic>=1.20.1",
     "mypy>=2.4.1",
+    "pgvector>=0.5.1",
     "pytest-cov>=7.1.0",
     "ruff>=0.17.4",
     "testcontainers>=4.15.0",
@@ -44,7 +46,7 @@ packages = ["app"]
 python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
-files = ["app", "tests"]
+files = ["app", "tests", "alembic"]
 
 [[tool.mypy.overrides]]
 module = "tests.*"
@@ -71,3 +73,8 @@ select = [
     "ASYNC",  # flake8-async (проверка асинхронного кода)
     "SIM",    # flake8-simplify (упрощение избыточных конструкций)
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
